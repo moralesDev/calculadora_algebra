@@ -22,10 +22,10 @@ export default function Sidebar({ activeCategory, onSelectCategory, onSelectExam
         }}>Σ</div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 500, color: "var(--color-text-primary)" }}>
-            AlgebraCalc
+            Math
           </div>
           <div style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>
-            100% local · sin tokens
+            Calculadora algebraica
           </div>
         </div>
       </div>
@@ -111,11 +111,6 @@ export default function Sidebar({ activeCategory, onSelectCategory, onSelectExam
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "10px 16px", borderTop: "0.5px solid var(--color-border-tertiary)" }}>
-        <div style={{ fontSize: 11, color: "#1D9E75", textAlign: "center", fontWeight: 500 }}>
-          ✓ Sin consumo de tokens
-        </div>
-      </div>
     </div>
   );
 }

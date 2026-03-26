@@ -39,7 +39,7 @@ export default function MessageThread({ history, error, bottomRef }) {
                 fontSize: 11, color: "var(--color-text-tertiary)",
                 marginBottom: 10, fontWeight: 500, letterSpacing: 0.5,
               }}>SOLUCIÓN PASO A PASO</div>
-              <StepDisplay steps={item.steps} />
+              <StepDisplay steps={item.steps} itemIndex={i} />
               {item.graphExprs?.length > 0 && (
                 <Graph exprs={item.graphExprs} />
               )}

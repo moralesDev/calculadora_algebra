@@ -1,13 +1,14 @@
 // Renderiza la lista de pasos devuelta por los solvers.
 // Cada paso tiene un `type` que determina su estilo visual.
-export default function StepDisplay({ steps }) {
+// `itemIndex` se usa para generar IDs únicos de sección para el Navigator.
+export default function StepDisplay({ steps, itemIndex }) {
   return (
     <div style={{ lineHeight: 1.9 }}>
       {steps.map((s, i) => {
         switch (s.type) {
           case "section":
             return (
-              <div key={i} style={{
+              <div key={i} id={itemIndex != null ? `sec-${itemIndex}-${i}` : undefined} style={{
                 fontSize: 13, fontWeight: 500, color: "#534AB7",
                 marginTop: 14, marginBottom: 4,
                 paddingBottom: 4, borderBottom: "0.5px solid #AFA9EC",

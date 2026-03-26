@@ -15,8 +15,6 @@ export default function Header({ onToggleSidebar, onClearHistory, hasHistory }) 
         <div style={{ fontSize: 14, fontWeight: 500, color: "var(--color-text-primary)" }}>
           Calculadora de Álgebra
         </div>
-        <Badge color="#534AB7" bg="#EEEDFE">Paso a paso</Badge>
-        <Badge color="#0F6E56" bg="#E1F5EE">100% local</Badge>
       </div>
 
       {hasHistory && (
@@ -27,7 +25,7 @@ export default function Header({ onToggleSidebar, onClearHistory, hasHistory }) 
             background: "none", border: "0.5px solid var(--color-border-secondary)",
             borderRadius: "var(--border-radius-md)", padding: "5px 12px", cursor: "pointer",
           }}
-        >Nueva sesión</button>
+        >Nueva conversación</button>
       )}
     </div>
   );

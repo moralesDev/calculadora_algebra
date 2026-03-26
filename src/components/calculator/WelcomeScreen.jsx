@@ -20,9 +20,7 @@ export default function WelcomeScreen() {
       <div style={{ fontSize: 14, color: "var(--color-text-secondary)", marginBottom: 8, lineHeight: 1.6 }}>
         Solución completa paso a paso. Todos los cálculos se realizan localmente en tu navegador.
       </div>
-      <div style={{ fontSize: 13, color: "#1D9E75", marginBottom: 32, fontWeight: 500 }}>
-        ✓ Sin tokens · Sin costo · Sin internet requerido
-      </div>
+      <div style={{ marginBottom: 32 }} />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, textAlign: "left" }}>
         {FEATURE_CARDS.map((card, i) => (
