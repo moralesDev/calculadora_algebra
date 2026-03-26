@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "Bash(command -v node)",
+      "Bash(echo \"PATH: $PATH\")",
+      "Read(//c/Users/user/AppData/Roaming/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/user/AppData/Local/Programs/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Users/user/**)"
+    ]
+  }
+}
