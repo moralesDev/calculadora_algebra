@@ -37,8 +37,8 @@ export function useCalculator() {
       const result = detectAndSolve(query);
       steps = result.steps;
       graphExprs = result.graphExprs ?? [];
-    } catch {
-      setError("No se pudo interpretar la expresión. Intenta escribirla de otra forma.");
+    } catch (err) {
+      setError(err.message || "No se pudo interpretar la expresión. Intenta escribirla de otra forma.");
       return;
     }
     setHistory((h) => [...h, { query, steps, graphExprs }]);

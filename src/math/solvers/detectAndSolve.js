@@ -29,6 +29,33 @@ function tryDerivative(expr) {
   }
 }
 
+// Identificadores matemáticos válidos como expresión única
+const KNOWN_MATH_SYMBOLS = new Set([
+  "x", "y", "z", "t", "n", "i", "e", "pi",
+  "sin", "cos", "tan", "asin", "acos", "atan",
+  "sinh", "cosh", "tanh", "sqrt", "cbrt", "log",
+  "log2", "log10", "ln", "exp", "abs", "ceil",
+  "floor", "round", "sign", "f", "g", "h",
+  "a", "b", "c", "k", "m", "p", "q", "r", "s",
+]);
+
+// Lanza un error si la expresión es texto sin sentido matemático
+function validateMathExpr(expr) {
+  let node;
+  try {
+    node = math.parse(expr);
+  } catch {
+    throw new Error(`"${expr}" no es una expresión matemática válida.`);
+  }
+  // Un símbolo suelto no reconocido (ej: "ergergertg") es texto sin sentido
+  if (
+    node.type === "SymbolNode" &&
+    !KNOWN_MATH_SYMBOLS.has(node.name.toLowerCase())
+  ) {
+    throw new Error(`"${expr}" no es una función o expresión matemática reconocida.`);
+  }
+}
+
 // Punto de entrada único: detecta el tipo de problema y delega al solver correcto
 // Retorna { steps: Step[], graphExprs: string[] }
 export function detectAndSolve(raw) {
@@ -72,6 +99,7 @@ export function detectAndSolve(raw) {
   if (lower.startsWith("simplif") || lower.startsWith("expand")) {
     const expr = input.replace(/^(simplifica|simplificar|expandir|expandir)\s*/i, "");
     const exprDisplay = display.replace(/^(simplifica|simplificar|expandir|expandir)\s*/i, "");
+    validateMathExpr(expr);
     let graphExpr;
     try { graphExpr = math.simplify(expr).toString(); } catch { graphExpr = expr; }
     const graphExprs = graphExpr.includes("x") ? [graphExpr] : [];
@@ -164,6 +192,7 @@ export function detectAndSolve(raw) {
   }
 
   // ── Expresión sin "=" → simplificar ──────────────────────────────────────
+  validateMathExpr(input);
   let graphExpr;
   try { graphExpr = math.simplify(input).toString(); } catch { graphExpr = input; }
   return {
