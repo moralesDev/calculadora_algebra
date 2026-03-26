@@ -24,12 +24,27 @@ export function solveQuadratic(a, b, c, original) {
   if (disc < 0) {
     steps.push({
       type: "text",
-      text: `Como Δ = ${fmt(disc)} < 0, no existen raíces reales.`,
+      text: `Como Δ = ${fmt(disc)} < 0, no existen raíces reales — las raíces son números complejos.`,
     });
     steps.push({ type: "text", text: "La parábola no corta el eje x." });
+
+    const realPart = -b / (2 * a);
+    const imagPart = Math.sqrt(-disc) / (2 * a);
+    const realR = Math.round(realPart * 1e6) / 1e6;
+    const imagR = Math.round(Math.abs(imagPart) * 1e6) / 1e6;
+
+    steps.push({ type: "section", text: "[5] Raíces complejas conjugadas" });
+    steps.push({ type: "step", text: "Paso 5 — Usando la fórmula con número imaginario i = √(−1):" });
+    steps.push({ type: "eq", text: `x = (−b ± √Δ) / 2a = (${fmt(-b)} ± √(${fmt(disc)})) / ${fmt(2 * a)}` });
+    steps.push({ type: "eq", text: `x = (${fmt(-b)} ± ${fmt(imagR)}i) / ${fmt(2 * a)}` });
+    steps.push({ type: "step", text: "Paso 6 — Separamos en parte real e imaginaria:" });
+    steps.push({ type: "eq", text: `x₁ = ${fmt(realR)} + ${fmt(imagR)}i` });
+    steps.push({ type: "eq", text: `x₂ = ${fmt(realR)} − ${fmt(imagR)}i` });
+    steps.push({ type: "text", text: `Parte real: α = −b/2a = ${fmt(realR)}` });
+    steps.push({ type: "text", text: `Parte imaginaria: β = √|Δ|/2a = ${fmt(imagR)}` });
     steps.push({
       type: "result",
-      text: "[✓] Resultado final — Sin raíces reales (Δ < 0)",
+      text: `[✓] Resultado final — x₁ = ${fmt(realR)} + ${fmt(imagR)}i,  x₂ = ${fmt(realR)} − ${fmt(imagR)}i`,
     });
     return steps;
   }

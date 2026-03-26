@@ -21,6 +21,14 @@ export function fmtCoef(c, variable = "x", power = 1) {
 export function prettify(str) {
   const sup = { 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" };
   return str
+    // sqrt(expr)  →  √(expr)
+    .replace(/sqrt\(([^)]+)\)/gi, "√($1)")
+    // log(x) / ln(x)  →  log x / ln x  (argumento simple: solo variable o número)
+    .replace(/\b(log10|log|ln)\(([a-zA-Z0-9]+)\)/g, "$1 $2")
+    // N^x  →  Nˣ  (base numérica o e con exponente x)
+    .replace(/(\d+|e)\s*\^\s*x\b/g, "$1ˣ")
+    // (expr)^N  →  (expr)ᴺ
+    .replace(/\)\s*\^\s*(\d+)/g, (_, n) => ")" + (sup[n] || `^${n}`))
     // x ^ N  →  xᴺ
     .replace(/x\s*\^\s*(\d+)/g, (_, n) => "x" + (sup[n] || `^${n}`))
     // N * x  →  Nx  (coeficiente por variable)
