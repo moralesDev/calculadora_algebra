@@ -1,5 +1,43 @@
 export const CATEGORIES = [
   {
+    label: "Suma",
+    icon: "+",
+    subtopics: [
+      {
+        label: "Suma de monomios",
+        examples: [
+          "sumar 5a, 6b, 8c",
+          "sumar 7a, -8b, -15a, 9b, -4c, 8",
+          "sumar -7a^2, 5ab, 3b^2, -a^2",
+        ],
+      },
+      {
+        label: "Suma de polinomios",
+        examples: [
+          "sumar a-b, 2a+3b-c, -4a+5b",
+          "sumar 3m-2n+4, 6n+4p-5, 8n-6, m-n-4p",
+          "sumar 3x^2-4xy+y^2, -5xy+6x^2-3y^2, -6y^2-8xy-9x^2",
+        ],
+      },
+      {
+        label: "Suma con coeficientes fraccionarios",
+        examples: [
+          "sumar (1/2)x^2+(1/3)xy, (1/2)xy+(1/4)y^2",
+          "sumar (2/3)a^2+(1/5)ab-(1/2)b^2, (5/6)a^2-(1/10)ab+(1/6)b^2",
+          "sumar (3/4)x^2-(2/5)xy+(1/6)y^2, (1/10)xy+(1/3)y^2",
+        ],
+      },
+      {
+        label: "Suma y valor numérico",
+        examples: [
+          "sumar 8a-3b+5c-d, -2b+c-4d, -3a+5b-c",
+          "sumar 4x-5y, -3x+6y-8, -x+y",
+          "sumar a+b-c, 2a+2b-2c, -3a-b+3c",
+        ],
+      },
+    ],
+  },
+  {
     label: "Ecuaciones",
     icon: "=",
     subtopics: [
@@ -20,11 +58,19 @@ export const CATEGORIES = [
         ],
       },
       {
-        label: "Racionales",
+        label: "Fraccionarias",
         examples: [
-          "x^2 - x - 6 = 0",
-          "x^2 + x - 12 = 0",
-          "x^2 - 2x - 15 = 0",
+          "1/x + 1/(x+1) = 1/2",
+          "3/(x-2) - 1/x = 1",
+          "x/(x+2) + 2/(x-1) = 1",
+        ],
+      },
+      {
+        label: "Inecuaciones",
+        examples: [
+          "2x - 5 > 3",
+          "x^2 - 4 < 0",
+          "3x + 1 >= 2x - 4",
         ],
       },
       {
@@ -84,7 +130,7 @@ export const CATEGORIES = [
         ],
       },
       {
-        label: "Forma matricial",
+        label: "Sistemas 2×2",
         examples: [
           "2x + y = 5, x - y = 1",
           "x + 2y = 7, 3x - y = 1",
@@ -92,11 +138,19 @@ export const CATEGORIES = [
         ],
       },
       {
-        label: "Raíces",
+        label: "Sistemas 3×3",
         examples: [
-          "x^2 - 9 = 0",
+          "x + y + z = 6, 2x - y + z = 3, x + 2y - z = 2",
+          "2x + y - z = 8, -3x - y + 2z = -11, -2x + y + 2z = -3",
+          "x + 2y + z = 7, 2x + y + z = 8, x + y + 2z = 7",
+        ],
+      },
+      {
+        label: "Binomias (cubos)",
+        examples: [
           "x^3 - 8 = 0",
-          "x^4 - 16 = 0",
+          "x^3 + 27 = 0",
+          "x^3 - 64 = 0",
         ],
       },
       {

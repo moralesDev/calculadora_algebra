@@ -32,16 +32,17 @@ export function useCalculator() {
   function solve(query = input.trim()) {
     if (!query) return;
     setError("");
-    let steps, graphExprs;
+    let steps, graphExprs, graphAsymptotes;
     try {
       const result = detectAndSolve(query);
       steps = result.steps;
       graphExprs = result.graphExprs ?? [];
+      graphAsymptotes = result.graphAsymptotes ?? null;
     } catch (err) {
       setError(err.message || "No se pudo interpretar la expresión. Intenta escribirla de otra forma.");
       return;
     }
-    setHistory((h) => [...h, { query, steps, graphExprs }]);
+    setHistory((h) => [...h, { query, steps, graphExprs, graphAsymptotes }]);
     setInput("");
     setTimeout(() => inputRef.current?.focus(), 50);
   }

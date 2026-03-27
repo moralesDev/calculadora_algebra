@@ -21,7 +21,7 @@ function fmtLabel(n) {
   return parseFloat(n.toPrecision(4)).toString();
 }
 
-export default function Graph({ exprs }) {
+export default function Graph({ exprs, asymptotes }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ panX: 0, panY: 0, scale: DEFAULT_SCALE });
   const dragRef = useRef(null);
@@ -120,6 +120,72 @@ export default function Graph({ exprs }) {
     for (let gy = Math.ceil(y0w / step) * step; gy <= y1w; gy += step) {
       if (Math.abs(gy) < step * 0.01) continue;
       ctx.fillText(fmtLabel(gy), numX, toPixY(gy));
+    }
+
+    // Asíntotas (antes de las curvas para que queden debajo)
+    if (asymptotes) {
+      const asymColor = dark ? "rgba(255,100,100,0.55)" : "rgba(200,50,50,0.45)";
+      ctx.setLineDash([7, 5]);
+      ctx.lineWidth = 1.3;
+      ctx.strokeStyle = asymColor;
+
+      // Verticales
+      (asymptotes.vertical || []).forEach((xv) => {
+        const px = toPixX(xv);
+        if (px < 0 || px > W) return;
+        ctx.beginPath();
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, H);
+        ctx.stroke();
+        // Etiqueta
+        ctx.setLineDash([]);
+        ctx.font = "10px 'SFMono-Regular', Consolas, monospace";
+        ctx.fillStyle = asymColor;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(`x=${fmtLabel(xv)}`, px + 3, 3);
+        ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = asymColor;
+      });
+
+      // Horizontales
+      (asymptotes.horizontal || []).forEach((yv) => {
+        const py = toPixY(yv);
+        if (py < 0 || py > H) return;
+        ctx.beginPath();
+        ctx.moveTo(0, py);
+        ctx.lineTo(W, py);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "10px 'SFMono-Regular', Consolas, monospace";
+        ctx.fillStyle = asymColor;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(`y=${fmtLabel(yv)}`, W - 4, py - 3);
+        ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = asymColor;
+      });
+
+      // Oblicuas  y = m·x + b
+      (asymptotes.oblique || []).forEach(({ m, b }) => {
+        const py0 = toPixY(m * x0w + b);
+        const py1 = toPixY(m * x1w + b);
+        ctx.beginPath();
+        ctx.moveTo(0, py0);
+        ctx.lineTo(W, py1);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "10px 'SFMono-Regular', Consolas, monospace";
+        ctx.fillStyle = asymColor;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        const bStr = b >= 0 ? `+${fmtLabel(b)}` : `${fmtLabel(b)}`;
+        ctx.fillText(`y=${fmtLabel(m)}x${bStr}`, W - 4, Math.min(Math.max(py1 - 3, 12), H - 12));
+        ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = asymColor;
+      });
+
+      ctx.setLineDash([]);
     }
 
     // Curvas

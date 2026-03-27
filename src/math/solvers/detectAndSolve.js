@@ -12,6 +12,10 @@ import { solveRadical } from "./solveRadical.js";
 import { solveLogarithmic } from "./solveLogarithmic.js";
 import { solveExponential } from "./solveExponential.js";
 import { solveSystem } from "./solveSystem.js";
+import { solveRational } from "./solveRational.js";
+import { solveFractional } from "./solveFractional.js";
+import { solveInequality } from "./solveInequality.js";
+import { solveAddition } from "./solveAddition.js";
 
 // Convierte caracteres Unicode matemáticos a ASCII que mathjs puede parsear
 function normalize(str) {
@@ -61,6 +65,15 @@ function validateMathExpr(expr) {
   }
 }
 
+// Detecta si una expresión es una función racional pura P(x)/Q(x)
+// (tiene "/" pero no raíces, logaritmos ni trigonométricas)
+function isPureRational(expr) {
+  if (!expr.includes("/")) return false;
+  const e = expr.toLowerCase();
+  if (/\bsqrt\b|\blog\b|\bln\b|\bsin\b|\bcos\b|\btan\b|\bexp\b|\babs\b/.test(e)) return false;
+  return e.includes("x");
+}
+
 // Detecta si el x aparece en posición de exponente (ecuación exponencial)
 function isExponentialEquation(input) {
   // Patrones: 2^x, 3^(2x), e^x, base^x  — x en el exponente
@@ -79,12 +92,120 @@ function isBiquadratic(simplified) {
   return hasX4 && hasX2 && !hasX3 && !hasX1;
 }
 
+// Detecta y resuelve ecuaciones binomias cúbicas: x³ ± A = 0
+// Usa factorización por suma/diferencia de cubos
+function solveCubicBinomial(simplified, exprLeft, display) {
+  // Verificar forma: x^3 + c (sin x^2 ni x^1)
+  const hasX2 = /x\s*\^\s*2/.test(simplified);
+  const hasX1 = /(?<![a-z])x(?!\s*\^)/.test(simplified);
+  if (hasX2 || hasX1) return null;
+
+  // Obtener el término independiente
+  let A;
+  try {
+    A = math.evaluate(simplified, { x: 0 });
+    A = Math.round(A * 1e6) / 1e6;
+  } catch { return null; }
+
+  if (Math.abs(A) < 1e-9) {
+    // x³ = 0 → x = 0 (triple raíz)
+    return null; // se maneja por bisección
+  }
+
+  // Verificar que sea efectivamente cúbica: f(x) = x^3 + A
+  let leadCoeff;
+  try {
+    const f = (x) => math.evaluate(simplified, { x });
+    // Para x^3 + A: f(2) - A = 8*lead, lead = (f(2)-A)/8
+    leadCoeff = Math.round(((f(2) - A) / 8) * 1e6) / 1e6;
+    // Verificar que no tenga otros términos: f(1) = lead + A
+    if (Math.abs(f(1) - leadCoeff - A) > 1e-4) return null;
+  } catch { return null; }
+
+  const steps = [];
+  steps.push({ type: "section", text: "[1] Identificación" });
+  steps.push({ type: "text", text: `Ecuación binomia de grado 3: ${display}` });
+  steps.push({ type: "text", text: `Forma: ${fmt(leadCoeff)}x³ ${A >= 0 ? "+" : ""}${fmt(A)} = 0` });
+
+  // Buscar a tal que a³ = |A / leadCoeff|
+  const absVal = Math.abs(A / leadCoeff);
+  const cbrtVal = Math.round(Math.cbrt(absVal) * 1e6) / 1e6;
+
+  const isDifference = (leadCoeff > 0 && A < 0) || (leadCoeff < 0 && A > 0);
+  const formulaType = isDifference ? "diferencia de cubos" : "suma de cubos";
+  const sign = isDifference ? "−" : "+";
+
+  steps.push({ type: "section", text: "[2] Factorización por " + formulaType });
+
+  if (isDifference) {
+    steps.push({ type: "text", text: `a³ − b³ = (a − b)(a² + ab + b²)` });
+  } else {
+    steps.push({ type: "text", text: `a³ + b³ = (a + b)(a² − ab + b²)` });
+  }
+
+  steps.push({ type: "step", text: `Paso 1 — Identificamos: a = x,  b = ${fmt(cbrtVal)}` });
+  steps.push({ type: "step", text: `Paso 2 — Factorizamos:` });
+
+  const bSq = Math.round(cbrtVal * cbrtVal * 1e6) / 1e6;
+  if (isDifference) {
+    steps.push({ type: "eq", text: `(x − ${fmt(cbrtVal)})(x² + ${fmt(cbrtVal)}x + ${fmt(bSq)}) = 0` });
+  } else {
+    steps.push({ type: "eq", text: `(x + ${fmt(cbrtVal)})(x² − ${fmt(cbrtVal)}x + ${fmt(bSq)}) = 0` });
+  }
+
+  steps.push({ type: "section", text: "[3] Resolver cada factor" });
+
+  // Raíz real: x = ±cbrtVal
+  const realRoot = isDifference ? cbrtVal : -cbrtVal;
+  steps.push({ type: "step", text: `Paso 3 — Factor lineal:` });
+  steps.push({ type: "eq", text: `x ${isDifference ? "−" : "+"} ${fmt(cbrtVal)} = 0  →  x₁ = ${fmt(realRoot)}` });
+
+  // Factor cuadrático: x² ∓ cbrtVal·x + bSq = 0
+  const qa = 1;
+  const qb = isDifference ? cbrtVal : -cbrtVal;
+  const qc = bSq;
+  const qdisc = qb * qb - 4 * qa * qc;
+
+  steps.push({ type: "step", text: `Paso 4 — Factor cuadrático: x² ${isDifference ? "+" : "−"} ${fmt(cbrtVal)}x + ${fmt(bSq)} = 0` });
+  steps.push({ type: "eq", text: `Δ = (${fmt(qb)})² − 4·${fmt(qc)} = ${fmt(qdisc)}` });
+
+  if (qdisc < 0) {
+    steps.push({ type: "text", text: `Δ < 0 → las otras dos raíces son imaginarias conjugadas.` });
+    const realPart = -qb / 2;
+    const imagPart = Math.round(Math.sqrt(-qdisc) / 2 * 1e6) / 1e6;
+    steps.push({ type: "eq", text: `x₂ = ${fmt(realPart)} + ${fmt(imagPart)}i,  x₃ = ${fmt(realPart)} − ${fmt(imagPart)}i` });
+    steps.push({ type: "result", text: `[✓] Resultado final — x₁ = ${fmt(realRoot)} (real),  x₂ = ${fmt(realPart)}+${fmt(imagPart)}i,  x₃ = ${fmt(realPart)}−${fmt(imagPart)}i` });
+  } else {
+    const sq = Math.sqrt(qdisc);
+    const x2 = Math.round(((-qb + sq) / 2) * 1e6) / 1e6;
+    const x3 = Math.round(((-qb - sq) / 2) * 1e6) / 1e6;
+    steps.push({ type: "eq", text: `x₂ = ${fmt(x2)},  x₃ = ${fmt(x3)}` });
+    steps.push({ type: "result", text: `[✓] Resultado final — x₁ = ${fmt(realRoot)},  x₂ = ${fmt(x2)},  x₃ = ${fmt(x3)}` });
+  }
+
+  return { steps, graphExprs: [simplified] };
+}
+
 // Punto de entrada único: detecta el tipo de problema y delega al solver correcto
 // Retorna { steps: Step[], graphExprs: string[] }
 export function detectAndSolve(raw) {
   const display = raw.trim();
   const input = normalize(display);
   const lower = input.toLowerCase();
+
+  // ── Suma algebraica ────────────────────────────────────────────────────────
+  if (
+    lower.startsWith("sumar") ||
+    lower.startsWith("suma de") ||
+    (lower.startsWith("suma ") && !lower.includes("="))
+  ) {
+    return { steps: solveAddition(input, display), graphExprs: [] };
+  }
+
+  // ── Suma implícita: múltiples expresiones con coma y sin "=" ──────────────
+  if (input.includes(",") && !input.includes("=") && !input.includes(">") && !input.includes("<")) {
+    return { steps: solveAddition(input, display), graphExprs: [] };
+  }
 
   // ── Derivada ──────────────────────────────────────────────────────────────
   if (
@@ -115,6 +236,14 @@ export function detectAndSolve(raw) {
     const graphExpr = eqIdx >= 0
       ? input.slice(eqIdx + 1).trim()
       : input.replace(/f\(x\)|g\(x\)|h\(x\)/gi, "").replace(/dominio|rango/gi, "").trim();
+
+    // Si la expresión es una función racional pura → solver especializado
+    if (eqIdx >= 0 && isPureRational(graphExpr)) {
+      const dispExpr = display.slice(display.indexOf("=") + 1).trim();
+      const result = solveRational(graphExpr, dispExpr);
+      return { steps: result.steps, graphExprs: [graphExpr], graphAsymptotes: result.asymptotes };
+    }
+
     return { steps: analyzeDomain(input, display), graphExprs: [graphExpr] };
   }
 
@@ -129,9 +258,28 @@ export function detectAndSolve(raw) {
     return { steps: simplifyExpr(expr, exprDisplay), graphExprs };
   }
 
-  // ── Sistema de ecuaciones (separadas por coma con dos "=") ────────────────
+  // ── Inecuación (contiene >, <, >=, <=) ──────────────────────────────────
+  if (/[><]/.test(input)) {
+    const inequalitySteps = solveInequality(input, display);
+    if (inequalitySteps) {
+      // Graficar la expresión del lado izquierdo si contiene x
+      const sepRegex = input.includes(">=") ? />=/ : input.includes("<=") ? /<=/ : input.includes(">") ? />/ : /</;
+      const lhsExpr = input.split(sepRegex)[0].trim();
+      let graphExpr;
+      try { graphExpr = math.simplify(lhsExpr).toString(); } catch { graphExpr = lhsExpr; }
+      return { steps: inequalitySteps, graphExprs: graphExpr.includes("x") ? [graphExpr] : [] };
+    }
+  }
+
+  // ── Sistema de ecuaciones (separadas por coma con dos o más "=") ─────────
   if (input.includes(",") && (input.match(/=/g) || []).length >= 2) {
     return { steps: solveSystem(input, display), graphExprs: [] };
+  }
+
+  // ── Sistema 3×3 también puede venir sin coma si tiene punto y coma ────────
+  if (input.includes(";") && (input.match(/=/g) || []).length >= 2) {
+    const normalized3 = input.replace(/;/g, ",");
+    return { steps: solveSystem(normalized3, display), graphExprs: [] };
   }
 
   // ── Ecuación (contiene "=") ───────────────────────────────────────────────
@@ -157,6 +305,12 @@ export function detectAndSolve(raw) {
       return { steps: solveExponential(input, display), graphExprs: [] };
     }
 
+    // ── Fraccionaria: ecuación con variable en denominador ───────────────
+    if (input.includes("/") && !isPureRational(input)) {
+      const fracSteps = solveFractional(input, display);
+      if (fracSteps) return { steps: fracSteps, graphExprs: [] };
+    }
+
     // ── Ecuaciones polinomiales ───────────────────────────────────────────
     const sides = input.split("=");
     const exprLeft = `(${sides[0]}) - (${sides[1]})`;
@@ -177,6 +331,12 @@ export function detectAndSolve(raw) {
       maxDeg = 2;
     else if (simplified.match(/x[²³⁴⁵]/)) maxDeg = 2;
     else if (simplified.includes("x")) maxDeg = 1;
+
+    // ── Ecuación binomia grado 3: x³ ± A = 0 (suma/diferencia de cubos) ──
+    if (maxDeg === 3) {
+      const cubicBinomial = solveCubicBinomial(simplified, exprLeft, display);
+      if (cubicBinomial) return cubicBinomial;
+    }
 
     // ── Bicuadrática: grado 4 con solo x^4 y x^2 ────────────────────────
     if (maxDeg === 4 && isBiquadratic(simplified)) {
@@ -273,8 +433,14 @@ export function detectAndSolve(raw) {
     return { steps, graphExprs: [simplified] };
   }
 
-  // ── Expresión sin "=" → simplificar ──────────────────────────────────────
+  // ── Expresión sin "=" → función racional o simplificar ───────────────────
   validateMathExpr(input);
+
+  if (isPureRational(input)) {
+    const result = solveRational(input, display);
+    return { steps: result.steps, graphExprs: [input], graphAsymptotes: result.asymptotes };
+  }
+
   let graphExpr;
   try { graphExpr = math.simplify(input).toString(); } catch { graphExpr = input; }
   return {

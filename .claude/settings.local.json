@@ -8,7 +8,10 @@
       "Read(//c/Program Files/**)",
       "Read(//c/Users/user/AppData/Local/Programs/**)",
       "Read(//c/Program Files \\(x86\\)/**)",
-      "Read(//c/Users/user/**)"
+      "Read(//c/Users/user/**)",
+      "Bash(awk 'NR==727' \"/c/Users/user/.claude/projects/c--Users-user-Documents-proyectos-calculadora/e859c164-2c41-4287-a66b-e91a9e447c4e.jsonl\")",
+      "Bash(awk 'NR==724' \"/c/Users/user/.claude/projects/c--Users-user-Documents-proyectos-calculadora/e859c164-2c41-4287-a66b-e91a9e447c4e.jsonl\")",
+      "Bash(awk 'NR==719' \"/c/Users/user/.claude/projects/c--Users-user-Documents-proyectos-calculadora/e859c164-2c41-4287-a66b-e91a9e447c4e.jsonl\")"
     ]
   }
 }

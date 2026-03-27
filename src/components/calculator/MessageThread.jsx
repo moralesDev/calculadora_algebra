@@ -41,7 +41,7 @@ export default function MessageThread({ history, error, bottomRef }) {
               }}>SOLUCIÓN PASO A PASO</div>
               <StepDisplay steps={item.steps} itemIndex={i} />
               {item.graphExprs?.length > 0 && (
-                <Graph exprs={item.graphExprs} />
+                <Graph exprs={item.graphExprs} asymptotes={item.graphAsymptotes} />
               )}
             </div>
           </div>
